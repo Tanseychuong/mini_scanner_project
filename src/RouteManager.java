@@ -1,17 +1,46 @@
-import org.w3c.dom.ls.LSOutput;
-
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Scanner;
 
-class NetworkPacketScanner{
-    String destination;
-    static void main(String[] args){
-        Scanner input = new Scanner(System.in);
-        System.out.println("Enter the  process you want to scanner");
-        destination = input.next();
+public class RouteManager {
+
+    public void addRoute(String destination,
+                         String subnetMask,
+                         String gateway) throws IOException {
+
+        ProcessBuilder pb = new ProcessBuilder(
+                "route",
+                "add",
+                destination,
+                "mask",
+                subnetMask,
+                gateway);
+
+        Process process = pb.start();
+
+        BufferedReader reader =
+                new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+        String line;
+
+        while ((line = reader.readLine()) != null) {
+            System.out.println(line);
+        }
     }
-    private void Netstat(){
-    Process process1 = Runtime.getRuntime().exec("route add "+destination+" mask "+[subnet_mask]+" "+[gateway]);
-    BufferedReader reader1 = new BufferedReader(new InputStreamReader(process1.getInputStream()));
-}}
+
+    public void printRoutingTable() throws IOException {
+
+        ProcessBuilder pb = new ProcessBuilder("route", "print");
+
+        Process process = pb.start();
+
+        BufferedReader reader =
+                new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+        String line;
+
+        while ((line = reader.readLine()) != null) {
+            System.out.println(line);
+        }
+    }
+}

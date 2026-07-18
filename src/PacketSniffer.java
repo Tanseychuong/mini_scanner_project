@@ -1,26 +1,17 @@
-import org.pcap4j.core.*;
+/*import org.pcap4j.core.*;
 
-public class PacketSniffe {
+public class PacketSniffer {
 
     public void sniff() throws Exception {
 
-        PcapNetworkInterface nif =
-                Pcaps.findAllDevs().get(0);
+        PcapNetworkInterface nif = Pcaps.findAllDevs().get(0);
+        PcapHandle handle = nif.openLive(65536, PcapNetworkInterface.PromiscuousMode.PROMISCUOUS, 10);
 
-        PcapHandle handle =
-                nif.openLive(
-                        65536,
-                        PcapNetworkInterface.PromiscuousMode.PROMISCUOUS,
-                        10);
-
-        PacketListener listener = packet -> {
-
-            System.out.println(packet);
-
+        PacketListener listener = packet -> { System.out.println(packet);
         };
 
         handle.loop(-1, listener);
 
     }
 
-}
+}*/
