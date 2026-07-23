@@ -17,6 +17,7 @@ public class Traceroute {
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(process.getInputStream()));
 
+        // initializing the line for storing the read text
         String line;
 
         while ((line = reader.readLine()) != null) {
