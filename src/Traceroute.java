@@ -13,6 +13,7 @@ public class Traceroute {
 
         Process process = pb.start();
 
+        // Buffered reader to reading from the process
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(process.getInputStream()));
 
