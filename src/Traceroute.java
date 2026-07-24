@@ -19,7 +19,7 @@ public class Traceroute {
 
         // initializing the line for storing the read text
         String line;
-
+        // looping throught the lines returned by the buffered reader
         while ((line = reader.readLine()) != null) {
 
             System.out.println(line);
