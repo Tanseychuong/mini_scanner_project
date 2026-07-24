@@ -13,6 +13,8 @@ public class Banner {
                                     MiniScanner v1.0
                               Network Discovery Tool
                               This tool is developed by network enthusist for the network lovers
+
+                              Please kindly use this tool reponsibly and enjoy the rest of your time.
                 """);
 
     }
