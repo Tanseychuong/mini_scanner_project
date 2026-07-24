@@ -16,6 +16,6 @@ public class Banner {
 
                               Please kindly use this tool reponsibly and enjoy the rest of your time.
                 """);
-
+        // Goodbye
     }
 }
