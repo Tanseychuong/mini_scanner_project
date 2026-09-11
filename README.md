@@ -108,13 +108,13 @@ MiniScanner/
 ## Clone the repository
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/Tanseychuong/mini_scanner_project
 ```
 
 Move into the project directory:
 
 ```bash
-cd MiniScanner
+mini_scanner_project
 ```
 
 ---
