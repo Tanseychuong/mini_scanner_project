@@ -114,7 +114,7 @@ git clone https://github.com/Tanseychuong/mini_scanner_project
 Move into the project directory:
 
 ```bash
-mini_scanner_project
+cd mini_scanner_project
 ```
 
 ---
