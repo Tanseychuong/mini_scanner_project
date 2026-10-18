@@ -5,27 +5,17 @@ import java.io.*;
 // class traceroute defintion
 public class Traceroute {
 
-    // method for tracing the destion using the processBuilder in the java .io
+    // method for tracing the destination with the OS traceroute tool
+    // (tracert on Windows, traceroute on Linux/macOS)
     public void trace(String destination)
-            throws IOException {
+            throws IOException, InterruptedException {
 
-        ProcessBuilder pb = new ProcessBuilder("tracert", destination);
-
-        Process process = pb.start();
-
-        // Buffered reader to reading from the process
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(process.getInputStream()));
-
-        // initializing the line for storing the read text
-        String line;
-        // looping throught the lines returned by the buffered reader
-        while ((line = reader.readLine()) != null) {
-
-            System.out.println(line);
-
+        if (CommandRunner.isWindows()) {
+            // -d skips reverse DNS lookups, which makes the trace much faster
+            CommandRunner.run("tracert", "-d", "-h", "30", destination);
+        } else {
+            CommandRunner.run("traceroute", "-n", "-m", "30", destination);
         }
-
     }
 
 }

@@ -35,3 +35,6 @@ output/
 *.exe
 *.msi
 *.jar
+
+# Scan reports
+reports/
