@@ -1,0 +1,106 @@
+# Isolated lab for testing MiniScanner without touching a real network.
+#
+#   lab_a 172.30.0.0/24                     lab_b 172.31.0.0/24
+#   scanner  .5                              remote-web  .10  (nginx :80)
+#   web      .10  (nginx :80)                remote-db   .11  (postgres :5432)
+#   cache    .11  (redis :6379)
+#   fake-ssh .12  (SSH banner :22)
+#   fake-ftp .13  (FTP banner :21)
+#   router   .254 <------------------------> router .254
+#
+# Both networks are internal macvlan networks with no parent interface: Docker
+# backs them with a dummy interface, so there is no path to the host's LAN or
+# the internet and every probe stays inside these containers. (macvlan rather
+# than an internal bridge, because Docker's bridge isolation rules drop routed
+# traffic, which would break the router/traceroute part of the lab.)
+
+name: miniscanner-lab
+
+networks:
+  lab_a:
+    driver: macvlan
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+  lab_b:
+    driver: macvlan
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.31.0.0/24
+
+services:
+
+  scanner:
+    build:
+      context: ..
+      dockerfile: sandbox/Dockerfile
+    image: miniscanner:lab
+    # NET_ADMIN lets the "Add Route" feature be tested; ICMP works as root by default
+    cap_add: [NET_ADMIN]
+    networks:
+      lab_a:
+        ipv4_address: 172.30.0.5
+    volumes:
+      - ./reports:/app/reports
+    stdin_open: true
+    tty: true
+    profiles: [tools]
+
+  router:
+    image: alpine:3.20
+    command: ["sleep", "infinity"]
+    sysctls:
+      net.ipv4.ip_forward: 1
+    networks:
+      lab_a:
+        ipv4_address: 172.30.0.254
+      lab_b:
+        ipv4_address: 172.31.0.254
+
+  web:
+    image: nginx:alpine
+    networks:
+      lab_a:
+        ipv4_address: 172.30.0.10
+
+  cache:
+    image: redis:7-alpine
+    networks:
+      lab_a:
+        ipv4_address: 172.30.0.11
+
+  fake-ssh:
+    image: alpine/socat
+    command: ["TCP-LISTEN:22,fork,reuseaddr", "SYSTEM:echo SSH-2.0-OpenSSH_9.6 MiniScannerLab"]
+    networks:
+      lab_a:
+        ipv4_address: 172.30.0.12
+
+  fake-ftp:
+    image: alpine/socat
+    command: ["TCP-LISTEN:21,fork,reuseaddr", "SYSTEM:echo 220 MiniScanner Lab FTP ready"]
+    networks:
+      lab_a:
+        ipv4_address: 172.30.0.13
+
+  # lab_b hosts send replies for lab_a back through the router so traceroute shows a hop
+  remote-web:
+    image: nginx:alpine
+    cap_add: [NET_ADMIN]
+    entrypoint: ["sh", "-c", "ip route add 172.30.0.0/24 via 172.31.0.254 && exec nginx -g 'daemon off;'"]
+    networks:
+      lab_b:
+        ipv4_address: 172.31.0.10
+
+  remote-db:
+    image: postgres:16-alpine
+    cap_add: [NET_ADMIN]
+    environment:
+      POSTGRES_PASSWORD: lab-only
+    # The stock entrypoint starts as root and drops to the postgres user itself
+    entrypoint: ["sh", "-c", "ip route add 172.30.0.0/24 via 172.31.0.254 && exec docker-entrypoint.sh postgres"]
+    networks:
+      lab_b:
+        ipv4_address: 172.31.0.11

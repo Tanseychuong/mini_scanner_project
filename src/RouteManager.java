@@ -1,46 +1,26 @@
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 public class RouteManager {
 
+    // Adding a route needs administrator/root rights
     public void addRoute(String destination,
                          String subnetMask,
-                         String gateway) throws IOException {
+                         String gateway) throws IOException, InterruptedException {
 
-        ProcessBuilder pb = new ProcessBuilder(
-                "route",
-                "add",
-                destination,
-                "mask",
-                subnetMask,
-                gateway);
-
-        Process process = pb.start();
-
-        BufferedReader reader =
-                new BufferedReader(new InputStreamReader(process.getInputStream()));
-
-        String line;
-
-        while ((line = reader.readLine()) != null) {
-            System.out.println(line);
+        if (CommandRunner.isWindows()) {
+            CommandRunner.run("route", "add", destination, "mask", subnetMask, gateway);
+        } else {
+            int prefix = Integer.bitCount(Subnet.toInt(subnetMask));
+            CommandRunner.run("ip", "route", "add", destination + "/" + prefix, "via", gateway);
         }
     }
 
-    public void printRoutingTable() throws IOException {
+    public void printRoutingTable() throws IOException, InterruptedException {
 
-        ProcessBuilder pb = new ProcessBuilder("route", "print");
-
-        Process process = pb.start();
-
-        BufferedReader reader =
-                new BufferedReader(new InputStreamReader(process.getInputStream()));
-
-        String line;
-
-        while ((line = reader.readLine()) != null) {
-            System.out.println(line);
+        if (CommandRunner.isWindows()) {
+            CommandRunner.run("route", "print");
+        } else {
+            CommandRunner.run("ip", "route", "show");
         }
     }
 }

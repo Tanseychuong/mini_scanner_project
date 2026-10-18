@@ -1,53 +1,37 @@
 import java.io.*;
-import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class WifiManager {
 
+    // Takes the menu's Scanner: opening a second Scanner on System.in can swallow buffered input
+    public static void showNetworks(Scanner input)
+            throws IOException, InterruptedException {
 
-    public static void showNetworks()
-            throws Exception {
+        if (!CommandRunner.isWindows()) {
+            // nmcli is NetworkManager's CLI, available on most desktop Linux distros
+            System.out.println("Non-Windows system detected, using nmcli.");
+            CommandRunner.run("nmcli", "device", "wifi", "list");
+            return;
+        }
+
         System.out.println("Select process to scanner");
         System.out.println("1. See available networks");
         System.out.println("2. See previously connected networks");
         System.out.println("3. See available networks with key clear (show passwords)");
-        //System.out.println("4. See available networks");
 
-        Scanner input = new Scanner(System.in);
-        int choice = input.nextInt();
-        if (choice == 1) {// Cmd to execute on the terminal
-            Process process = Runtime.getRuntime().exec("netsh wlan show networks");
+        int choice = Menu.readInt(input);
 
-            //Reading from the terminal with buffer reader
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-
-            String line;
-            //printing the results from the executions
-            while ((line = reader.readLine()) != null) {
-                System.out.println( line);
-            }}
-        if (choice == 2){
-            Process process1 = Runtime.getRuntime().exec("netsh wlan show profiles");
-            BufferedReader reader1 = new BufferedReader(new InputStreamReader(process1.getInputStream()));
-                String line1;
-                while((line1 = reader1.readLine()) != null){
-                    System.out.println(line1);
-            }}
-
-        if (choice == 3){
-            System.out.println("Enter the name of the WIFI you want to see it's passkey");
-            try {
-                String name = input.next();
-                Process process1 = Runtime.getRuntime().exec("netsh wlan show profile " + name + " key=clear");
-                BufferedReader reader1 = new BufferedReader(new InputStreamReader(process1.getInputStream()));
-
-            String line2;
-            while((line2 = reader1.readLine()) != null){
-                System.out.println(line2);
-            }}catch (RuntimeException e) {
-                System.out.println("Unexpected behaviour occurred while scanner the networks");
+        switch (choice) {
+            case 1 -> CommandRunner.run("netsh", "wlan", "show", "networks");
+            case 2 -> CommandRunner.run("netsh", "wlan", "show", "profiles");
+            case 3 -> {
+                System.out.println("Enter the name of the WIFI you want to see it's passkey");
+                // nextLine so names with spaces work; passing it as its own argument
+                // stops the name from being interpreted as extra netsh options
+                String name = input.nextLine().trim();
+                CommandRunner.run("netsh", "wlan", "show", "profile", "name=" + name, "key=clear");
             }
-
-            }
+            default -> System.out.println("Invalid option!");
         }
-        }
+    }
+}
